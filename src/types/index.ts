@@ -2,11 +2,10 @@ export interface Project {
   id: number;
   title: string;
   description: string;
-  imageUrl: string;
+  image?: string;
   technologies: string[];
-  githubUrl: string;
+  githubUrl?: string;
   liveUrl?: string;
-  featured: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -16,7 +15,6 @@ export interface Message {
   name: string;
   email: string;
   message: string;
-  read: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,15 +22,14 @@ export interface Message {
 export interface Skill {
   id: number;
   name: string;
-  category: string;
   level: number;
-  icon?: string;
+  description?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ApiResponse<T> {
+  success: boolean;
   data: T;
-  message?: string;
   error?: string;
 } 

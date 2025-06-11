@@ -10,18 +10,17 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model Project {
   id           Int      @id @default(autoincrement())
   title        String
   description  String
-  image        String
-  technologies String   // Armazenado como JSON string
-  link         String
-  githubLink   String?
-  featured     Boolean  @default(false)
+  imageUrl     String
+  technologies String[]
+  githubUrl    String?
+  liveUrl      String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -31,16 +30,16 @@ model Message {
   name      String
   email     String
   message   String
-  read      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Skill {
-  id       Int    @id @default(autoincrement())
-  name     String
-  category String
-  level    Int
-  icon     String
-  order    Int    @default(0)
+  id        Int      @id @default(autoincrement())
+  name      String
+  level     Int
+  category  String
+  icon      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

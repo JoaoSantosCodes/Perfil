@@ -1,36 +1,63 @@
-import { Box, Flex, Link, Button, useColorMode } from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom';
 
-const Navbar = () => {
-  const { colorMode, toggleColorMode } = useColorMode()
+export const Navbar = () => {
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
 
   return (
-    <Box as="nav" bg="white" boxShadow="sm" py={4}>
-      <Flex maxW="container.xl" mx="auto" px={4} align="center" justify="space-between">
-        <Link as={RouterLink} to="/" fontSize="xl" fontWeight="bold">
-          João Santos
-        </Link>
-        
-        <Flex gap={6}>
-          <Link as={RouterLink} to="/" _hover={{ textDecoration: 'none', color: 'blue.500' }}>
-            Home
+    <nav className="bg-white shadow-md">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          <Link to="/" className="text-xl font-bold text-gray-800">
+            Portfolio
           </Link>
-          <Link as={RouterLink} to="/about" _hover={{ textDecoration: 'none', color: 'blue.500' }}>
-            Sobre
-          </Link>
-          <Link as={RouterLink} to="/projects" _hover={{ textDecoration: 'none', color: 'blue.500' }}>
-            Projetos
-          </Link>
-          <Link as={RouterLink} to="/contact" _hover={{ textDecoration: 'none', color: 'blue.500' }}>
-            Contato
-          </Link>
-          <Button onClick={toggleColorMode}>
-            {colorMode === 'light' ? '🌙' : '☀️'}
-          </Button>
-        </Flex>
-      </Flex>
-    </Box>
-  )
-}
-
-export default Navbar 
+          <div className="flex space-x-4">
+            <Link
+              to="/"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/')
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Home
+            </Link>
+            <Link
+              to="/projects"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/projects')
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Projetos
+            </Link>
+            <Link
+              to="/skills"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/skills')
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Skills
+            </Link>
+            <Link
+              to="/contact"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/contact')
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Contato
+            </Link>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}; 

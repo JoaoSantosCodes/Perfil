@@ -2,112 +2,131 @@ import { useState, useCallback } from 'react';
 import { api } from '../services/api';
 import { Project, Message, Skill, ApiResponse } from '../types';
 
-export function useApi() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-  const handleRequest = useCallback(async <T>(
-    request: () => Promise<ApiResponse<T>>
-  ): Promise<T | null> => {
+export const useApi = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleRequest = async <T,>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> => {
     try {
       setLoading(true);
-      setError(null);
-      const response = await request();
-      return response.data;
+      setError('');
+
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: ApiResponse<T> = await response.json();
+      return data.data;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-      return null;
+      throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   // Projects
-  const getProjects = useCallback(() => 
-    handleRequest(api.getProjects), [handleRequest]);
-  
-  const getFeaturedProjects = useCallback(() => 
-    handleRequest(api.getFeaturedProjects), [handleRequest]);
-  
-  const getProject = useCallback((id: number) => 
-    handleRequest(() => api.getProject(id)), [handleRequest]);
-  
-  const createProject = useCallback((project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => 
-    handleRequest(() => api.createProject(project)), [handleRequest]);
-  
-  const updateProject = useCallback((id: number, project: Partial<Project>) => 
-    handleRequest(() => api.updateProject(id, project)), [handleRequest]);
-  
-  const deleteProject = useCallback(async (id: number) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await api.deleteProject(id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
+  const getProjects = async (): Promise<Project[]> => {
+    const response = await fetch(`${API_URL}/projects`);
+    if (!response.ok) {
+      throw new Error('Erro ao carregar projetos');
     }
-  }, []);
+    return response.json();
+  };
 
-  // Messages
-  const getMessages = useCallback(() => 
-    handleRequest(api.getMessages), [handleRequest]);
-  
-  const getUnreadMessages = useCallback(() => 
-    handleRequest(api.getUnreadMessages), [handleRequest]);
-  
-  const createMessage = useCallback((message: Omit<Message, 'id' | 'read' | 'createdAt' | 'updatedAt'>) => 
-    handleRequest(() => api.createMessage(message)), [handleRequest]);
-  
-  const markMessageAsRead = useCallback((id: number) => 
-    handleRequest(() => api.markMessageAsRead(id)), [handleRequest]);
+  const createProject = (project: Omit<Project, 'id'>) =>
+    handleRequest<Project>('/projects', {
+      method: 'POST',
+      body: JSON.stringify(project),
+    });
+
+  const updateProject = (id: number, project: Partial<Project>) =>
+    handleRequest<Project>(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(project),
+    });
+
+  const deleteProject = (id: number) =>
+    handleRequest<void>(`/projects/${id}`, {
+      method: 'DELETE',
+    });
 
   // Skills
-  const getSkills = useCallback(() => 
-    handleRequest(api.getSkills), [handleRequest]);
-  
-  const getSkillsByCategory = useCallback((category: string) => 
-    handleRequest(() => api.getSkillsByCategory(category)), [handleRequest]);
-  
-  const createSkill = useCallback((skill: Omit<Skill, 'id' | 'createdAt' | 'updatedAt'>) => 
-    handleRequest(() => api.createSkill(skill)), [handleRequest]);
-  
-  const updateSkill = useCallback((id: number, skill: Partial<Skill>) => 
-    handleRequest(() => api.updateSkill(id, skill)), [handleRequest]);
-  
-  const deleteSkill = useCallback(async (id: number) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await api.deleteSkill(id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
+  const getSkills = async (): Promise<Skill[]> => {
+    const response = await fetch(`${API_URL}/skills`);
+    if (!response.ok) {
+      throw new Error('Erro ao carregar skills');
     }
-  }, []);
+    return response.json();
+  };
+
+  const createSkill = (skill: Omit<Skill, 'id'>) =>
+    handleRequest<Skill>('/skills', {
+      method: 'POST',
+      body: JSON.stringify(skill),
+    });
+
+  const updateSkill = (id: number, skill: Partial<Skill>) =>
+    handleRequest<Skill>(`/skills/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(skill),
+    });
+
+  const deleteSkill = (id: number) =>
+    handleRequest<void>(`/skills/${id}`, {
+      method: 'DELETE',
+    });
+
+  // Messages
+  const getMessages = () => handleRequest<Message[]>('/messages');
+
+  const sendMessage = async (message: Omit<Message, 'id'>): Promise<Message> => {
+    const response = await fetch(`${API_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao enviar mensagem');
+    }
+
+    return response.json();
+  };
+
+  const deleteMessage = (id: number) =>
+    handleRequest<void>(`/messages/${id}`, {
+      method: 'DELETE',
+    });
 
   return {
     loading,
     error,
-    // Projects
     getProjects,
-    getFeaturedProjects,
-    getProject,
     createProject,
     updateProject,
     deleteProject,
-    // Messages
-    getMessages,
-    getUnreadMessages,
-    createMessage,
-    markMessageAsRead,
-    // Skills
     getSkills,
-    getSkillsByCategory,
     createSkill,
     updateSkill,
     deleteSkill,
+    getMessages,
+    sendMessage,
+    deleteMessage,
   };
-} 
+}; 
